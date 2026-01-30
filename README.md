@@ -16,11 +16,39 @@ Based on [Geoffrey Huntley's Ralph pattern](https://ghuntley.com/ralph/).
 - `jq` installed (`brew install jq` on macOS)
 - A git repository for your project
 
-## Setup
+## Installation
 
-### Option 1: Copy to your project
+### Option 1: Global Installation (Recommended)
 
-Copy the ralph files into your project:
+Install Ralph globally so you can use it in any project. This installs both the `ralph` shell command and Claude Code skills (`/prd`, `/ralph`):
+
+```bash
+# Clone the repository
+git clone https://github.com/Stealinglight/ralph.git
+cd ralph
+
+# Run the installer
+./install.sh
+
+# Or specify a custom install directory for the ralph command
+./install.sh /usr/local/bin
+```
+
+The installer will:
+- Create a symlink to `~/.local/bin/ralph` (or your custom directory)
+- Install Claude Code skills to `~/.claude/skills/`
+
+**Note:** If `~/.local/bin` is not in your PATH, add this to your shell profile:
+
+```bash
+export PATH="$PATH:$HOME/.local/bin"
+```
+
+After installation, you can use `ralph` from any project directory and `/prd`, `/ralph` skills in Claude Code.
+
+### Option 2: Copy to your project
+
+Copy the ralph files into your project (for project-specific customization):
 
 ```bash
 # From your project root
@@ -35,43 +63,21 @@ cp /path/to/ralph/CLAUDE.md scripts/ralph/CLAUDE.md    # For Claude Code
 chmod +x scripts/ralph/ralph.sh
 ```
 
-### Option 2: Install skills globally (Amp)
+### Option 3: Install skills only (Amp users)
 
-Copy the skills to your Amp or Claude config for use across all projects:
+If you only need the skills without the `ralph` command, or need to install skills for Amp:
 
-For AMP
+**For Amp:**
 ```bash
 cp -r skills/prd ~/.config/amp/skills/
 cp -r skills/ralph ~/.config/amp/skills/
 ```
 
-For Claude Code (manual)
+**For Claude Code:** Skills are installed automatically with Option 1. To install manually:
 ```bash
 cp -r skills/prd ~/.claude/skills/
 cp -r skills/ralph ~/.claude/skills/
 ```
-
-### Option 3: Use as Claude Code Marketplace
-
-Add the Ralph marketplace to Claude Code:
-
-```bash
-/plugin marketplace add snarktank/ralph
-```
-
-Then install the skills:
-
-```bash
-/plugin install ralph-skills@ralph-marketplace
-```
-
-Available skills after installation:
-- `/prd` - Generate Product Requirements Documents
-- `/ralph` - Convert PRDs to prd.json format
-
-Skills are automatically invoked when you ask Claude to:
-- "create a prd", "write prd for", "plan this feature"
-- "convert this prd", "turn into ralph format", "create prd.json"
 
 ### Configure Amp auto-handoff (recommended)
 
@@ -87,7 +93,16 @@ This enables automatic handoff when context fills up, allowing Ralph to handle l
 
 ## Workflow
 
-### 1. Create a PRD
+### 1. Initialize your project (if using global installation)
+
+```bash
+cd your-project
+ralph init
+```
+
+This creates a `.ralph/` directory for state files.
+
+### 2. Create a PRD
 
 Use the PRD skill to generate a detailed requirements document:
 
@@ -97,7 +112,7 @@ Load the prd skill and create a PRD for [your feature description]
 
 Answer the clarifying questions. The skill saves output to `tasks/prd-[feature-name].md`.
 
-### 2. Convert PRD to Ralph format
+### 3. Convert PRD to Ralph format
 
 Use the Ralph skill to convert the markdown PRD to JSON:
 
@@ -107,13 +122,14 @@ Load the ralph skill and convert tasks/prd-[feature-name].md to prd.json
 
 This creates `prd.json` with user stories structured for autonomous execution.
 
-### 3. Run Ralph
+### 4. Run Ralph
 
 ```bash
-# Using Amp (default)
-./scripts/ralph/ralph.sh [max_iterations]
+# Using global installation
+ralph --tool claude 10     # Run 10 iterations with Claude Code
+ralph --tool amp 5         # Run 5 iterations with Amp
 
-# Using Claude Code
+# Using local installation
 ./scripts/ralph/ralph.sh --tool claude [max_iterations]
 ```
 
@@ -131,18 +147,28 @@ Ralph will:
 
 ## Key Files
 
-| File | Purpose |
-|------|---------|
-| `ralph.sh` | The bash loop that spawns fresh AI instances (supports `--tool amp` or `--tool claude`) |
-| `prompt.md` | Prompt template for Amp |
-| `CLAUDE.md` | Prompt template for Claude Code |
-| `prd.json` | User stories with `passes` status (the task list) |
-| `prd.json.example` | Example PRD format for reference |
-| `progress.txt` | Append-only learnings for future iterations |
-| `skills/prd/` | Skill for generating PRDs (works with Amp and Claude Code) |
-| `skills/ralph/` | Skill for converting PRDs to JSON (works with Amp and Claude Code) |
-| `.claude-plugin/` | Plugin manifest for Claude Code marketplace discovery |
-| `flowchart/` | Interactive visualization of how Ralph works |
+### Installation Files (in Ralph installation directory)
+
+| File               | Purpose                                                                                 |
+| ------------------ | --------------------------------------------------------------------------------------- |
+| `ralph.sh`         | The bash loop that spawns fresh AI instances (supports `--tool amp` or `--tool claude`) |
+| `install.sh`       | Installation script to make Ralph globally available                                    |
+| `prompt.md`        | Prompt template for Amp                                                                 |
+| `CLAUDE.md`        | Prompt template for Claude Code                                                         |
+| `prd.json.example` | Example PRD format for reference                                                        |
+| `skills/prd/`      | Skill for generating PRDs                                                               |
+| `skills/ralph/`    | Skill for converting PRDs to JSON                                                       |
+| `flowchart/`       | Interactive visualization of how Ralph works                                            |
+
+### Project Files (in your project directory)
+
+| File                  | Purpose                                           |
+| --------------------- | ------------------------------------------------- |
+| `prd.json`            | User stories with `passes` status (the task list) |
+| `progress.txt`        | Append-only learnings for future iterations       |
+| `.ralph/`             | State directory (auto-created)                    |
+| `.ralph/archive/`     | Archived runs by date/branch                      |
+| `.ralph/.last-branch` | Branch tracking state                             |
 
 ## Flowchart
 
@@ -230,7 +256,7 @@ After copying `prompt.md` (for Amp) or `CLAUDE.md` (for Claude Code) to your pro
 
 ## Archiving
 
-Ralph automatically archives previous runs when you start a new feature (different `branchName`). Archives are saved to `archive/YYYY-MM-DD-feature-name/`.
+Ralph automatically archives previous runs when you start a new feature (different `branchName`). Archives are saved to `.ralph/archive/YYYY-MM-DD-feature-name/` in your project directory.
 
 ## References
 
