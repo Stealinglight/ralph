@@ -8,6 +8,25 @@ Based on [Geoffrey Huntley's Ralph pattern](https://ghuntley.com/ralph/).
 
 [Read my in-depth article on how I use Ralph](https://x.com/ryancarson/status/2008548371712135632)
 
+## What's Different in This Fork
+
+This fork extends Geoffrey Huntley's original Ralph concept with several enhancements:
+
+| Feature | Original | This Fork |
+|---------|----------|-----------|
+| **Installation** | Manual setup | One-command installer (`./install.sh`) |
+| **AI Tools** | Concept only | Works with both [Amp](https://ampcode.com) and [Claude Code](https://docs.anthropic.com/en/docs/claude-code) |
+| **Skills** | None | `/prd` and `/ralph` skills for PRD generation and conversion |
+| **Project Init** | Manual | `ralph init` command sets up project structure |
+| **State Management** | In-repo | Separate `.ralph/` directory with archiving |
+| **Visualization** | None | [Interactive flowchart](https://snarktank.github.io/ralph/) showing the loop |
+
+**Key additions:**
+- **Global CLI** - Install once, use in any project with `ralph --tool claude 10`
+- **PRD Skills** - Generate structured PRDs interactively with `/prd`, convert to JSON with `/ralph`
+- **Automatic Archiving** - Previous runs are archived when switching features
+- **Dual Tool Support** - Switch between Amp and Claude Code with `--tool` flag
+
 ## Prerequisites
 
 - One of the following AI coding tools installed and authenticated:
